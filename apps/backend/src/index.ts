@@ -21,4 +21,7 @@ app.get("/", async (c) => {
 app.route("/applications", ApplicationController);
 app.route("/week-schedules", WeekScheduleController);
 
-export default app;
+export default {
+  port: process.env.PORT || 3000,
+  fetch: app.fetch,
+};
