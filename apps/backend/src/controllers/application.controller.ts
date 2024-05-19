@@ -4,16 +4,25 @@ import { authMiddleware } from "../middlewares/auth.middleware";
 import { db } from "../db/db";
 import { applications as applicationsTable } from "../db/schema";
 import { eq } from "drizzle-orm";
-import { ApplocationService } from "../services/application.service";
+import { ApplicationService } from "../services/application.service";
 import { zValidator } from "@hono/zod-validator";
 import { createApplicationDto } from "../dtos/create-application.dto";
+import { createApplicationWithScheduleDto } from "../dtos/create-application-with-schedule.dto";
 
 export const ApplicationController = new Hono();
 
 ApplicationController.use(authMiddleware);
 
 ApplicationController.get("/", async (c) => {
-  const applications = await ApplocationService.findAll();
+  const applications = await ApplicationService.findAll();
+
+  return c.json(applications);
+});
+
+ApplicationController.get("/me", async (c) => {
+  const auth = getAuth(c);
+
+  const applications = await ApplicationService.findAllByUser(auth!.userId!);
 
   return c.json(applications);
 });
@@ -21,32 +30,18 @@ ApplicationController.get("/", async (c) => {
 ApplicationController.get("/:id", async (c) => {
   const { id } = c.req.param();
 
-  const application = await ApplocationService.findSpecific(id);
+  const application = await ApplicationService.findSpecific(id);
 
   return c.json(application);
 });
 
-ApplicationController.get("/me", async (c) => {
-  const auth = getAuth(c);
-
-  const applications = await ApplocationService.findAllByUser(auth!.userId!);
-
-  return c.json(applications);
-});
-
 ApplicationController.post(
   "/",
-  zValidator("json", createApplicationDto),
+  zValidator("json", createApplicationWithScheduleDto),
   async (c) => {
     const dto = c.req.valid("json");
 
-    const applications = await ApplocationService.create(dto);
-
-    if (!applications.length) {
-      return c.json({ message: "Failed to create application" }, 500);
-    }
-
-    const application = applications[0];
+    const application = await ApplicationService.createWithSchedule(dto);
 
     return c.json(application);
   }

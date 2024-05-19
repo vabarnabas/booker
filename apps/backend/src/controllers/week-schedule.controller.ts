@@ -1,7 +1,7 @@
 import { getAuth } from "@hono/clerk-auth";
 import { Hono } from "hono";
 import { authMiddleware } from "../middlewares/auth.middleware";
-import { ApplocationService } from "../services/application.service";
+import { ApplicationService } from "../services/application.service";
 import { zValidator } from "@hono/zod-validator";
 import { createApplicationDto } from "../dtos/create-application.dto";
 import { WeekScheduleService } from "../services/week-schedule.service";

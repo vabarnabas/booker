@@ -1,5 +1,5 @@
 {
-  "id": "c011a787-07bd-4e1f-bbbd-a75f6e2d903e",
+  "id": "c4279c21-ec92-4589-8473-7953873f2736",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "6",
   "dialect": "postgresql",
@@ -17,6 +17,12 @@
         },
         "name": {
           "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "time_slot": {
+          "name": "time_slot",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -40,8 +46,63 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.week_schedules": {
-      "name": "week_schedules",
+    "public.daily_schedules": {
+      "name": "daily_schedules",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "week_schedule_id": {
+          "name": "week_schedule_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "day": {
+          "name": "day",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "start_time": {
+          "name": "start_time",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "end_time": {
+          "name": "end_time",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "daily_schedules_week_schedule_id_weekly_schedules_id_fk": {
+          "name": "daily_schedules_week_schedule_id_weekly_schedules_id_fk",
+          "tableFrom": "daily_schedules",
+          "tableTo": "weekly_schedules",
+          "columnsFrom": [
+            "week_schedule_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.weekly_schedules": {
+      "name": "weekly_schedules",
       "schema": "",
       "columns": {
         "id": {
@@ -55,7 +116,7 @@
           "name": "available_days",
           "type": "text[]",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "extra_days": {
           "name": "extra_days",
@@ -67,14 +128,14 @@
           "name": "application_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "week_schedules_application_id_applications_id_fk": {
-          "name": "week_schedules_application_id_applications_id_fk",
-          "tableFrom": "week_schedules",
+        "weekly_schedules_application_id_applications_id_fk": {
+          "name": "weekly_schedules_application_id_applications_id_fk",
+          "tableFrom": "weekly_schedules",
           "tableTo": "applications",
           "columnsFrom": [
             "application_id"
@@ -82,7 +143,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },

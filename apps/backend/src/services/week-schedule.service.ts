@@ -1,25 +1,28 @@
 import { eq } from "drizzle-orm";
 import { db } from "../db/db";
-import { applications, weekSchedules } from "../db/schema";
+import { applications, weeklySchedules } from "../db/schema";
 import { CreateWeekScheduleDto } from "../dtos/create-week-schedule.dto";
 
 export class WeekScheduleService {
   static async findAll() {
-    return await db.select().from(weekSchedules);
+    return await db.select().from(weeklySchedules);
   }
 
   static async findSpecific(id: string) {
-    return await db.select().from(weekSchedules).where(eq(applications.id, id));
+    return await db
+      .select()
+      .from(weeklySchedules)
+      .where(eq(applications.id, id));
   }
 
   static async findByProject(applicationId: string) {
     return await db
       .select()
-      .from(weekSchedules)
-      .where(eq(weekSchedules.applicationId, applicationId));
+      .from(weeklySchedules)
+      .where(eq(weeklySchedules.applicationId, applicationId));
   }
 
   static async create(dto: CreateWeekScheduleDto) {
-    return await db.insert(weekSchedules).values(dto);
+    return await db.insert(weeklySchedules).values(dto);
   }
 }

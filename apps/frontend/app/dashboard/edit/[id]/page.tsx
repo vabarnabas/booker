@@ -2,6 +2,7 @@
 import Button from "@/components/form-elements/button";
 import Input from "@/components/form-elements/input";
 import Text from "@/components/form-elements/text";
+import Spinner from "@/components/spinner/spinner";
 import {
   CreateApplicationSchema,
   createApplicationSchema,
@@ -11,8 +12,8 @@ import { errorHandler } from "@/utils/error-handler";
 import { httpClient } from "@/utils/http-client";
 import { useAuth } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import React from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect } from "react";
 import {
   Controller,
   FormProvider,
@@ -20,9 +21,12 @@ import {
   useForm,
 } from "react-hook-form";
 import { toast } from "sonner";
+import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
-export default function Create() {
+export default function Edit() {
+  const { id } = useParams();
+
   const router = useRouter();
   const { userId, getToken } = useAuth();
   const form = useForm<CreateApplicationSchema>({
@@ -35,6 +39,7 @@ export default function Create() {
     getValues,
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = form;
   const { append, remove, fields } = useFieldArray({
@@ -52,6 +57,37 @@ export default function Create() {
     "Saturday",
     "Sunday",
   ];
+
+  const { data, isLoading, error, mutate } = useSWR(
+    `/application/${id}`,
+    async () => {
+      const token = await getToken();
+      const { data } = await httpClient.get(`/applications/${id}`, {
+        token: token!,
+      });
+      return data;
+    },
+    { refreshInterval: 0, revalidateOnFocus: false, revalidateOnMount: true }
+  );
+
+  useEffect(() => {
+    if (id) {
+      mutate();
+    }
+  }, [id, mutate]);
+
+  useEffect(() => {
+    if (data) {
+      console.log(data);
+
+      reset({
+        name: data.name,
+        timeSlot: data.timeSlot,
+        availableDays: data.weeklySchedules.availableDays,
+        dailySchedule: data.weeklySchedules.dailySchedules,
+      });
+    }
+  }, [data, reset]);
 
   const { trigger } = useSWRMutation(
     "create-application",
@@ -104,6 +140,14 @@ export default function Create() {
   };
 
   watch();
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-grow justify-center items-center">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="pb-16 w-full">

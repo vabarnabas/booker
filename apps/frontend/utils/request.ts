@@ -1,4 +1,4 @@
-export function pathBuilder(path: string, params?: Record<string, unknown>) {
+  export function pathBuilder(path: string, params?: Record<string, unknown>) {
   let localPath: string = path;
 
   if (!params) return localPath;

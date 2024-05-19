@@ -25,7 +25,7 @@ export default function RootLayout({
           <Toaster position="top-right" />
           <div
             className={clsx(
-              "max-w-[1280px] pt-20 min-h-screen pb-4 w-full px-6"
+              "flex justify-center max-w-[1280px] pt-20 min-h-screen pb-4 w-full px-6"
             )}
           >
             {children}
