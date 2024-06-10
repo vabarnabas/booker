@@ -3,7 +3,7 @@ import { cva, VariantProps } from "class-variance-authority";
 import { ButtonHTMLAttributes } from "react";
 
 const buttonVariants = cva(
-  "justify-center flex gap-x-1 items-center px-3 py-1 font-medium text-sm border rounded-md",
+  "justify-center flex gap-x-1 items-center px-3 py-1.5 font-medium text-sm border rounded-md",
   {
     variants: {
       intent: {

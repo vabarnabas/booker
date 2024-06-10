@@ -152,7 +152,6 @@ export default function Edit() {
 
   watch();
   watch("dailySchedules");
-  console.log(fields, getValues("availableDays"));
 
   if (isValidating) {
     return (
