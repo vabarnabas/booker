@@ -1,14 +1,11 @@
-import { time } from "drizzle-orm/mysql-core";
 import { z } from "zod";
 
 export const createApplicationWithScheduleDto = z.object({
   name: z.string(),
   createdBy: z.string(),
   timeSlot: z.string(),
-  weeklySchedule: z.object({
-    availableDays: z.array(z.string()),
-  }),
-  dailySchedule: z.array(
+  availableDays: z.array(z.string()).min(1, "Please select at least one day"),
+  dailySchedules: z.array(
     z.object({
       day: z.string(),
       startTime: z

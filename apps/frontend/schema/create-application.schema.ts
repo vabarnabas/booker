@@ -2,9 +2,10 @@ import { string, z } from "zod";
 
 export const createApplicationSchema = z.object({
   name: z.string(),
+
   availableDays: z.array(z.string()).min(1, "Please select at least one day"),
   timeSlot: z.string(),
-  dailySchedule: z.array(
+  dailySchedules: z.array(
     z.object({
       day: z.string(),
       startTime: z

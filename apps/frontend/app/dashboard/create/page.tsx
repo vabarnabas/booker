@@ -39,10 +39,10 @@ export default function Create() {
   } = form;
   const { append, remove, fields } = useFieldArray({
     control,
-    name: "dailySchedule",
+    name: "dailySchedules",
   });
 
-  const days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const fullDays = [
     "Monday",
     "Tuesday",
@@ -67,8 +67,8 @@ export default function Create() {
             body: {
               name: formValues.name,
               createdBy: userId,
-              dailySchedule: formValues.dailySchedule,
-              weeklySchedule: { availableDays: formValues.availableDays },
+              dailySchedules: formValues.dailySchedules,
+              availableDays: formValues.availableDays,
               timeSlot: formValues.timeSlot,
             },
             token: token!,
@@ -172,38 +172,38 @@ export default function Create() {
                     </Text>
                     <div className="mt-4 grid md:grid-cols-2 gap-4">
                       <Controller
-                        name={`dailySchedule.${index}.startTime`}
+                        name={`dailySchedules.${index}.startTime`}
                         control={control}
                         render={({ field }) => (
                           <Input
                             placeholder="e.g. 08:00"
                             title="Start Time"
                             error={
-                              errors.dailySchedule?.[index]?.startTime?.message
+                              errors.dailySchedules?.[index]?.startTime?.message
                                 ? "error"
                                 : undefined
                             }
                             errorMessage={
-                              errors.dailySchedule?.[index]?.startTime?.message
+                              errors.dailySchedules?.[index]?.startTime?.message
                             }
                             {...field}
                           />
                         )}
                       />
                       <Controller
-                        name={`dailySchedule.${index}.endTime`}
+                        name={`dailySchedules.${index}.endTime`}
                         control={control}
                         render={({ field }) => (
                           <Input
                             placeholder="e.g. 16:00"
                             title="Start Time"
                             error={
-                              errors.dailySchedule?.[index]?.endTime?.message
+                              errors.dailySchedules?.[index]?.endTime?.message
                                 ? "error"
                                 : undefined
                             }
                             errorMessage={
-                              errors.dailySchedule?.[index]?.endTime?.message
+                              errors.dailySchedules?.[index]?.endTime?.message
                             }
                             {...field}
                           />

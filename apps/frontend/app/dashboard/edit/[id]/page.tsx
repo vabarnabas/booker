@@ -42,12 +42,12 @@ export default function Edit() {
     reset,
     formState: { errors },
   } = form;
-  const { append, remove, fields } = useFieldArray({
+  const { append, remove, fields, insert } = useFieldArray({
     control,
-    name: "dailySchedule",
+    name: "dailySchedules",
   });
 
-  const days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const fullDays = [
     "Monday",
     "Tuesday",
@@ -58,7 +58,7 @@ export default function Edit() {
     "Sunday",
   ];
 
-  const { data, isLoading, error, mutate } = useSWR(
+  const { data, isValidating, error, mutate } = useSWR(
     `/application/${id}`,
     async () => {
       const token = await getToken();
@@ -78,13 +78,11 @@ export default function Edit() {
 
   useEffect(() => {
     if (data) {
-      console.log(data);
-
       reset({
         name: data.name,
         timeSlot: data.timeSlot,
-        availableDays: data.weeklySchedules.availableDays,
-        dailySchedule: data.weeklySchedules.dailySchedules,
+        availableDays: data.availableDays,
+        dailySchedules: data.dailySchedules,
       });
     }
   }, [data, reset]);
@@ -99,12 +97,12 @@ export default function Edit() {
         async () => {
           const token = await getToken();
 
-          await httpClient.post("/applications", {
+          await httpClient.put(`/applications/${id}`, {
             body: {
               name: formValues.name,
               createdBy: userId,
-              dailySchedule: formValues.dailySchedule,
-              weeklySchedule: { availableDays: formValues.availableDays },
+              dailySchedules: formValues.dailySchedules,
+              availableDays: formValues.availableDays,
               timeSlot: formValues.timeSlot,
             },
             token: token!,
@@ -112,7 +110,7 @@ export default function Edit() {
         },
         {
           onSafeEndStep: () => {
-            toast("Application created successfully");
+            toast("Application updated successfully");
             router.push("/dashboard");
           },
         }
@@ -126,6 +124,7 @@ export default function Edit() {
 
   const handleDayClick = (day: string) => {
     const availableDays = getValues("availableDays");
+    const dayIndex = days.indexOf(day);
 
     if (availableDays.includes(day)) {
       setValue(
@@ -134,14 +133,28 @@ export default function Edit() {
       );
       remove(fields.findIndex((field) => field.day === day));
     } else {
-      append({ day, startTime: "", endTime: "" });
-      setValue("availableDays", [...availableDays, day]);
+      const insertIndex = availableDays.findIndex(
+        (d) => days.indexOf(d) > dayIndex
+      );
+      if (insertIndex === -1) {
+        append({ day, startTime: "", endTime: "" });
+        setValue("availableDays", [...availableDays, day]);
+      } else {
+        insert(insertIndex, { day, startTime: "", endTime: "" });
+        setValue("availableDays", [
+          ...availableDays.slice(0, insertIndex),
+          day,
+          ...availableDays.slice(insertIndex),
+        ]);
+      }
     }
   };
 
   watch();
+  watch("dailySchedules");
+  console.log(fields, getValues("availableDays"));
 
-  if (isLoading) {
+  if (isValidating) {
     return (
       <div className="flex flex-grow justify-center items-center">
         <Spinner />
@@ -216,38 +229,38 @@ export default function Edit() {
                     </Text>
                     <div className="mt-4 grid md:grid-cols-2 gap-4">
                       <Controller
-                        name={`dailySchedule.${index}.startTime`}
+                        name={`dailySchedules.${index}.startTime`}
                         control={control}
                         render={({ field }) => (
                           <Input
                             placeholder="e.g. 08:00"
                             title="Start Time"
                             error={
-                              errors.dailySchedule?.[index]?.startTime?.message
+                              errors.dailySchedules?.[index]?.startTime?.message
                                 ? "error"
                                 : undefined
                             }
                             errorMessage={
-                              errors.dailySchedule?.[index]?.startTime?.message
+                              errors.dailySchedules?.[index]?.startTime?.message
                             }
                             {...field}
                           />
                         )}
                       />
                       <Controller
-                        name={`dailySchedule.${index}.endTime`}
+                        name={`dailySchedules.${index}.endTime`}
                         control={control}
                         render={({ field }) => (
                           <Input
                             placeholder="e.g. 16:00"
                             title="Start Time"
                             error={
-                              errors.dailySchedule?.[index]?.endTime?.message
+                              errors.dailySchedules?.[index]?.endTime?.message
                                 ? "error"
                                 : undefined
                             }
                             errorMessage={
-                              errors.dailySchedule?.[index]?.endTime?.message
+                              errors.dailySchedules?.[index]?.endTime?.message
                             }
                             {...field}
                           />
@@ -260,7 +273,7 @@ export default function Edit() {
           </div>
           <div className="bg-white fixed h-14 bottom-0 inset-x-0 flex items-center justify-center border-t">
             <div className="w-full max-w-[1280px] flex items-center justify-end px-6">
-              <Button intent={"primary"}>Create</Button>
+              <Button intent={"primary"}>Save </Button>
             </div>
           </div>
         </form>

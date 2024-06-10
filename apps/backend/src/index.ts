@@ -5,7 +5,6 @@ import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 
 import { ApplicationController } from "./controllers/application.controller";
 import { authMiddleware } from "./middlewares/auth.middleware";
-import { WeekScheduleController } from "./controllers/week-schedule.controller";
 
 const app = new Hono();
 
@@ -19,7 +18,6 @@ app.get("/", async (c) => {
 });
 
 app.route("/applications", ApplicationController);
-app.route("/week-schedules", WeekScheduleController);
 
 export default {
   port: process.env.PORT || 3000,
