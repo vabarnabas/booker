@@ -12,7 +12,6 @@ import { httpClient } from "@/utils/http-client";
 import { useAuth } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import React from "react";
 import {
   Controller,
   FormProvider,
