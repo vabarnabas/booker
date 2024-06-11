@@ -8,8 +8,8 @@ export class AppointmentService {
   }
 
   static async findSpecific(id: string) {
-    return await prisma.appointment.findUnique({
-      where: { id, externalId: id },
+    return await prisma.appointment.findFirst({
+      where: { OR: [{ id: id }, { externalId: id }] },
     });
   }
 

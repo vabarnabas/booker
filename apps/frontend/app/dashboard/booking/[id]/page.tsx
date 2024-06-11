@@ -42,9 +42,9 @@ export default function Edit() {
     formState: { errors },
   } = form;
 
-  console.log(errors);
+  console.log(getValues());
 
-  const { data, isLoading, error, mutate } = useSWR(
+  const { data, isValidating, mutate } = useSWR(
     `/application/${id}`,
     async () => {
       const token = await getToken();
@@ -55,12 +55,6 @@ export default function Edit() {
     },
     { refreshInterval: 0, revalidateOnFocus: false, revalidateOnMount: true }
   );
-
-  useEffect(() => {
-    if (id) {
-      mutate();
-    }
-  }, [id, mutate]);
 
   const { trigger, isMutating } = useSWRMutation(
     "create-application",
@@ -93,6 +87,35 @@ export default function Edit() {
     }
   );
 
+  const {
+    trigger: triggerScheduleFetch,
+    data: schedule,
+    isMutating: scheduleIsMutating,
+  } = useSWRMutation(
+    "create-application",
+    async (_: string, { arg: day }: { arg: string }) => {
+      return errorHandler(async () => {
+        const token = await getToken();
+        const { data } = await httpClient.get(
+          `/applications/timeslots/${id}?date=:date&day=:day`,
+          {
+            token: token!,
+            params: { date: getValues("date"), day },
+          }
+        );
+        return data as string[];
+      });
+    }
+  );
+
+  useEffect(() => {
+    if (id) {
+      mutate();
+    }
+  }, [id, mutate]);
+
+  console.log(schedule);
+
   const onSubmit = handleSubmit((formData) => {
     trigger(formData);
   });
@@ -116,7 +139,7 @@ export default function Edit() {
 
   watch();
 
-  if (isLoading || isMutating) {
+  if (isValidating || isMutating) {
     return (
       <div className="flex flex-grow justify-center items-center">
         <Spinner />
@@ -161,7 +184,7 @@ export default function Edit() {
             <Calendar
               selectedDay={new Date(getValues("date"))}
               availableDays={data.availableDays}
-              onChange={(value, day) => {
+              onChange={async (value, day) => {
                 setDay(day);
                 setValue("date", dateFormatter.to(value));
                 const timeSlots = getTimeSlots(day);
@@ -170,6 +193,8 @@ export default function Edit() {
                 if (timeSlots && !timeSlots.includes(time)) {
                   setValue("time", timeSlots[0]);
                 }
+
+                await triggerScheduleFetch(day);
               }}
             />
             <Text
@@ -180,12 +205,19 @@ export default function Edit() {
             >
               Available Timeslots
             </Text>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
-              {day
-                ? getTimeSlots(day)!.map((timeSlot: string) => (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6 w-full">
+              {day &&
+                (scheduleIsMutating ? (
+                  <div className="w-full flex flex-grow justify-center items-center md:col-span-4 col-span-2">
+                    <Spinner />
+                  </div>
+                ) : schedule && schedule.length ? (
+                  schedule.map((timeSlot: string) => (
                     <div
                       key={timeSlot}
-                      onClick={() => setValue("time", timeSlot)}
+                      onClick={() => {
+                        setValue("time", timeSlot);
+                      }}
                       className={cn(
                         "border rounded-md px-4 py-3 text-sm flex justify-center items-center hover:bg-blue-ultra-light cursor-pointer",
                         getValues("time") === timeSlot
@@ -196,7 +228,11 @@ export default function Edit() {
                       {timeSlot}
                     </div>
                   ))
-                : null}
+                ) : (
+                  <div className="flex flex-grow justify-center items-center">
+                    No time slots available
+                  </div>
+                ))}
             </div>
           </div>
           <div className="bg-white fixed h-14 bottom-0 inset-x-0 flex items-center justify-center border-t">

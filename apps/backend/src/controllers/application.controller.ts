@@ -23,6 +23,15 @@ ApplicationController.get("/me", async (c) => {
   return c.json(applications);
 });
 
+ApplicationController.get("/timeslots/:id", async (c) => {
+  const { id } = c.req.param();
+  const { date, day } = c.req.query();
+
+  const timeSlots = await ApplicationService.getTimeSlots(id, date, day);
+
+  return c.json(timeSlots);
+});
+
 ApplicationController.get("/:id", async (c) => {
   const { id } = c.req.param();
 
