@@ -9,7 +9,9 @@
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "turbo run dev"
+    "dev": "turbo run dev",
+    "start": "turbo run start",
+    "build": "turbo run build"
   },
   "keywords": [],
   "author": "",
