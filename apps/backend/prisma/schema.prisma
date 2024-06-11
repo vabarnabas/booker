@@ -1,6 +1,6 @@
 generator client {
   provider      = "prisma-client-js"
-  output        = "../generated"
+  // output        = "../generated"
   binaryTargets = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x"]
 }
 
@@ -32,9 +32,11 @@ model DailySchedule {
 
 model Appointment {
   id            String      @id @default(uuid())
-  date          DateTime
-  startTime     String
-  endTime       String
+  name          String
+  email         String
+  externalId    String      @unique
+  date          String
+  time          String
   application   Application @relation(fields: [applicationId], references: [id])
   applicationId String
   status        String

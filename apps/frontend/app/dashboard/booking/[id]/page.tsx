@@ -4,47 +4,45 @@ import Button from "@/components/form-elements/button";
 import Input from "@/components/form-elements/input";
 import Text from "@/components/form-elements/text";
 import Spinner from "@/components/spinner/spinner";
+import useCalendar from "@/hooks/useCalendar";
+
 import {
-  CreateApplicationSchema,
-  createApplicationSchema,
-} from "@/schema/create-application.schema";
-import {
-  CreateBookingSchema,
-  createBookingSchema,
-} from "@/schema/create-booking.schema";
+  CreateAppointmentSchema,
+  createAppointmentSchema,
+} from "@/schema/create-appointment.schema";
 import { cn } from "@/utils/cn";
 import { dateFormatter } from "@/utils/date-formatter";
 import { errorHandler } from "@/utils/error-handler";
+import { generateTimeSlots } from "@/utils/generate-time-slots";
 import { httpClient } from "@/utils/http-client";
 import { useAuth } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect } from "react";
-import {
-  Controller,
-  FormProvider,
-  useFieldArray,
-  useForm,
-} from "react-hook-form";
+import { useParams, useRouter } from "next/navigation";
+import React, { useCallback, useEffect, useState } from "react";
+import { Controller, FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
 export default function Edit() {
+  const [day, setDay] = useState<null | string>(null);
   const { id } = useParams();
 
   const router = useRouter();
   const { getToken } = useAuth();
-  const form = useForm<CreateBookingSchema>({
-    resolver: zodResolver(createBookingSchema),
-    defaultValues: { day: new Date().toDateString() },
+  const form = useForm<CreateAppointmentSchema>({
+    resolver: zodResolver(createAppointmentSchema),
   });
   const {
     control,
     handleSubmit,
     watch,
+    setValue,
+    getValues,
     formState: { errors },
   } = form;
+
+  console.log(errors);
 
   const { data, isLoading, error, mutate } = useSWR(
     `/application/${id}`,
@@ -64,16 +62,23 @@ export default function Edit() {
     }
   }, [id, mutate]);
 
-  const { trigger } = useSWRMutation(
+  const { trigger, isMutating } = useSWRMutation(
     "create-application",
-    async (_: string, { arg: formValues }: { arg: CreateBookingSchema }) => {
+    async (
+      _: string,
+      { arg: formValues }: { arg: CreateAppointmentSchema }
+    ) => {
       errorHandler(
         async () => {
           const token = await getToken();
 
-          await httpClient.post("/applications", {
+          await httpClient.post("/appointments", {
             body: {
+              applicationId: id,
               name: formValues.name,
+              date: formValues.date,
+              email: formValues.email,
+              time: formValues.time,
             },
             token: token!,
           });
@@ -92,9 +97,26 @@ export default function Edit() {
     trigger(formData);
   });
 
+  const getTimeSlots = useCallback(
+    (day: string) => {
+      if (data) {
+        const schedule = data.dailySchedules.find(
+          (dailySchedule: any) => dailySchedule.day === day
+        );
+
+        return generateTimeSlots(
+          schedule.startTime,
+          schedule.endTime,
+          data.timeSlot
+        );
+      }
+    },
+    [data]
+  );
+
   watch();
 
-  if (isLoading) {
+  if (isLoading || isMutating) {
     return (
       <div className="flex flex-grow justify-center items-center">
         <Spinner />
@@ -137,14 +159,49 @@ export default function Edit() {
           />
           <div className="">
             <Calendar
+              selectedDay={new Date(getValues("date"))}
               availableDays={data.availableDays}
-              onChange={(value) => console.log(dateFormatter.to(value))}
+              onChange={(value, day) => {
+                setDay(day);
+                setValue("date", dateFormatter.to(value));
+                const timeSlots = getTimeSlots(day);
+                const time = getValues("time");
+
+                if (timeSlots && !timeSlots.includes(time)) {
+                  setValue("time", timeSlots[0]);
+                }
+              }}
             />
-            <div className="flex flex-col gap-y-6 mt-6"></div>
+            <Text
+              fontSize={24}
+              lineHeight={32}
+              fontWeight={500}
+              className="mt-12"
+            >
+              Available Timeslots
+            </Text>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
+              {day
+                ? getTimeSlots(day)!.map((timeSlot: string) => (
+                    <div
+                      key={timeSlot}
+                      onClick={() => setValue("time", timeSlot)}
+                      className={cn(
+                        "border rounded-md px-4 py-3 text-sm flex justify-center items-center hover:bg-blue-ultra-light cursor-pointer",
+                        getValues("time") === timeSlot
+                          ? "bg-blue-ultra-light"
+                          : null
+                      )}
+                    >
+                      {timeSlot}
+                    </div>
+                  ))
+                : null}
+            </div>
           </div>
           <div className="bg-white fixed h-14 bottom-0 inset-x-0 flex items-center justify-center border-t">
             <div className="w-full max-w-[1280px] flex items-center justify-end px-6">
-              <Button intent={"primary"}>Create</Button>
+              <Button intent={"primary"}>Book</Button>
             </div>
           </div>
         </form>

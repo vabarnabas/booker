@@ -8,13 +8,15 @@ import { cn } from "@/utils/cn";
 interface CalendarProps {
   initialYear?: number;
   availableDays?: string[];
-  onChange: (value: Date) => void;
+  selectedDay?: Date;
+  onChange: (value: Date, index: string) => void;
 }
 
 export default function Calendar({
   initialYear,
   onChange,
   availableDays,
+  selectedDay,
 }: CalendarProps) {
   const [view, setView] = useState<"month" | "year">("month");
 
@@ -82,11 +84,20 @@ export default function Calendar({
                 day ? (
                   <div
                     onClick={() => {
-                      onChange(new Date(year, month, day));
+                      if (
+                        availableDays &&
+                        !availableDays.includes(getDayString(day))
+                      )
+                        return;
+                      onChange(new Date(year, month, day), getDayString(day));
                     }}
                     key={`calendar_${day}_${index}`}
                     className={cn(
                       "flex aspect-square w-10 md:w-14 cursor-pointer items-center justify-center rounded-md border",
+                      selectedDay?.toDateString() ===
+                        new Date(year, month, day).toDateString()
+                        ? "bg-blue-ultra-light"
+                        : null,
                       availableDays
                         ? availableDays.includes(getDayString(day))
                           ? "hover:bg-blue-ultra-light"
@@ -95,7 +106,7 @@ export default function Calendar({
                     )}
                   >
                     <Text fontSize={14} fontWeight={400} intent={"secondary"}>
-                      {day}
+                      {day}{" "}
                     </Text>
                   </div>
                 ) : (

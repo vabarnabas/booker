@@ -2,6 +2,7 @@
 import Button from "@/components/form-elements/button";
 import Input from "@/components/form-elements/input";
 import Text from "@/components/form-elements/text";
+import Spinner from "@/components/spinner/spinner";
 import {
   CreateApplicationSchema,
   createApplicationSchema,
@@ -52,7 +53,7 @@ export default function Create() {
     "Sunday",
   ];
 
-  const { trigger } = useSWRMutation(
+  const { trigger, isMutating } = useSWRMutation(
     "create-application",
     async (
       _: string,
@@ -103,6 +104,14 @@ export default function Create() {
   };
 
   watch();
+
+  if (isMutating) {
+    return (
+      <div className="flex flex-grow justify-center items-center">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="pb-16 w-full">
