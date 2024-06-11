@@ -162,6 +162,10 @@ const config = {
       {
         "fromEnvVar": null,
         "value": "debian-openssl-1.1.x"
+      },
+      {
+        "fromEnvVar": null,
+        "value": "debian-openssl-3.0.x"
       }
     ],
     "previewFeatures": [],
@@ -187,8 +191,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider      = \"prisma-client-js\"\n  output        = \"../generated\"\n  binaryTargets = [\"native\", \"debian-openssl-1.1.x\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Application {\n  id             String          @id @default(uuid())\n  name           String\n  timeSlot       String\n  createdBy      String\n  createdAt      DateTime        @default(now())\n  updatedAt      DateTime        @updatedAt\n  availableDays  String[]\n  dailySchedules DailySchedule[]\n  appointment    Appointment[]\n}\n\nmodel DailySchedule {\n  id            String      @id @default(uuid())\n  day           String\n  startTime     String\n  endTime       String\n  application   Application @relation(fields: [applicationId], references: [id])\n  applicationId String\n}\n\nmodel Appointment {\n  id            String      @id @default(uuid())\n  date          DateTime\n  startTime     String\n  endTime       String\n  application   Application @relation(fields: [applicationId], references: [id])\n  applicationId String\n  status        String\n  statusMessage String?\n}\n",
-  "inlineSchemaHash": "ce516be9fc81a9fb12035969a88f6938b88638ec21c3e3928a3dc8472089d4e4",
+  "inlineSchema": "generator client {\n  provider      = \"prisma-client-js\"\n  output        = \"../generated\"\n  binaryTargets = [\"native\", \"debian-openssl-1.1.x\", \"debian-openssl-3.0.x\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Application {\n  id             String          @id @default(uuid())\n  name           String\n  timeSlot       String\n  createdBy      String\n  createdAt      DateTime        @default(now())\n  updatedAt      DateTime        @updatedAt\n  availableDays  String[]\n  dailySchedules DailySchedule[]\n  appointment    Appointment[]\n}\n\nmodel DailySchedule {\n  id            String      @id @default(uuid())\n  day           String\n  startTime     String\n  endTime       String\n  application   Application @relation(fields: [applicationId], references: [id])\n  applicationId String\n}\n\nmodel Appointment {\n  id            String      @id @default(uuid())\n  date          DateTime\n  startTime     String\n  endTime       String\n  application   Application @relation(fields: [applicationId], references: [id])\n  applicationId String\n  status        String\n  statusMessage String?\n}\n",
+  "inlineSchemaHash": "2e6e321fcb1073bae974706dbd731b8fdc1f98e80e57e007556af1d4feb56cb3",
   "copyEngine": true
 }
 config.dirname = '/'
